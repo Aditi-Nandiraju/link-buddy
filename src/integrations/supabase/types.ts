@@ -19,22 +19,34 @@ export type Database = {
           clicks: number
           created_at: string
           id: string
+          is_active: boolean
+          last_accessed_at: string | null
+          max_clicks: number | null
           original_url: string
           short_code: string
+          user_id: string | null
         }
         Insert: {
           clicks?: number
           created_at?: string
           id?: string
+          is_active?: boolean
+          last_accessed_at?: string | null
+          max_clicks?: number | null
           original_url: string
           short_code: string
+          user_id?: string | null
         }
         Update: {
           clicks?: number
           created_at?: string
           id?: string
+          is_active?: boolean
+          last_accessed_at?: string | null
+          max_clicks?: number | null
           original_url?: string
           short_code?: string
+          user_id?: string | null
         }
         Relationships: []
       }
