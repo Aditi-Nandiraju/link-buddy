@@ -5,57 +5,73 @@ import { Loader2 } from "lucide-react";
 
 const Redirect = () => {
   const { code } = useParams<{ code: string }>();
-  const [notFound, setNotFound] = useState(false);
+  const [status, setStatus] = useState<"loading" | "not_found" | "inactive" | "expired">("loading");
 
   useEffect(() => {
     const handleRedirect = async () => {
-      if (!code) {
-        setNotFound(true);
-        return;
-      }
+      if (!code) { setStatus("not_found"); return; }
 
       try {
-        // Fetch the link
         const { data: link, error } = await supabase
           .from("links")
-          .select("original_url, clicks")
+          .select("original_url, clicks, is_active, max_clicks")
           .eq("short_code", code)
           .single();
 
-        if (error || !link) {
-          setNotFound(true);
-          return;
-        }
+        if (error || !link) { setStatus("not_found"); return; }
+        if (!link.is_active) { setStatus("inactive"); return; }
+        if (link.max_clicks !== null && link.clicks >= link.max_clicks) { setStatus("expired"); return; }
 
-        // Increment click count
+        // Increment clicks and set last_accessed_at
         await supabase
           .from("links")
-          .update({ clicks: link.clicks + 1 })
+          .update({ clicks: link.clicks + 1, last_accessed_at: new Date().toISOString() })
           .eq("short_code", code);
 
-        // Redirect to original URL
         window.location.href = link.original_url;
       } catch (err) {
         console.error("Redirect error:", err);
-        setNotFound(true);
+        setStatus("not_found");
       }
     };
 
     handleRedirect();
   }, [code]);
 
-  if (notFound) {
-    return <Navigate to="/" replace />;
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Redirecting...</p>
+        </div>
+      </div>
+    );
   }
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto mb-4" />
-        <p className="text-muted-foreground">Redirecting...</p>
+  if (status === "inactive") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+        <div className="text-center max-w-md">
+          <h1 className="font-display text-3xl font-bold text-foreground mb-2">Link Inactive</h1>
+          <p className="text-muted-foreground">This shortened link has been disabled by its owner.</p>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  if (status === "expired") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+        <div className="text-center max-w-md">
+          <h1 className="font-display text-3xl font-bold text-foreground mb-2">Link Expired</h1>
+          <p className="text-muted-foreground">This shortened link has reached its maximum click limit and is no longer available.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return <Navigate to="/" replace />;
 };
 
 export default Redirect;
