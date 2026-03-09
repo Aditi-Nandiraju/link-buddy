@@ -73,6 +73,17 @@ export function LinkCard({ link, onUpdate }: LinkCardProps) {
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      const { error } = await supabase.from("links").delete().eq("id", link.id);
+      if (error) throw error;
+      onUpdate();
+      toast.success("Link deleted");
+    } catch {
+      toast.error("Failed to delete link");
+    }
+  };
+
   const truncateUrl = (url: string, maxLength: number = 45) => {
     if (url.length <= maxLength) return url;
     return url.substring(0, maxLength) + "...";
