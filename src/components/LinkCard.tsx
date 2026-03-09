@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Link } from "@/types/link";
-import { Copy, Check, ExternalLink, MousePointerClick, Pencil, X, Save } from "lucide-react";
+import { Copy, Check, ExternalLink, MousePointerClick, Pencil, X, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -73,6 +73,17 @@ export function LinkCard({ link, onUpdate }: LinkCardProps) {
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      const { error } = await supabase.from("links").delete().eq("id", link.id);
+      if (error) throw error;
+      onUpdate();
+      toast.success("Link deleted");
+    } catch {
+      toast.error("Failed to delete link");
+    }
+  };
+
   const truncateUrl = (url: string, maxLength: number = 45) => {
     if (url.length <= maxLength) return url;
     return url.substring(0, maxLength) + "...";
@@ -129,6 +140,9 @@ export function LinkCard({ link, onUpdate }: LinkCardProps) {
             </p>
             <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)} className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
               <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleDelete} className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Trash2 className="h-3.5 w-3.5 text-destructive" />
             </Button>
           </div>
         )}
