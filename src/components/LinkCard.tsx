@@ -141,6 +141,9 @@ export function LinkCard({ link, onUpdate }: LinkCardProps) {
             <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)} className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
               <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
             </Button>
+            <Button variant="ghost" size="sm" onClick={handleDelete} className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Trash2 className="h-3.5 w-3.5 text-destructive" />
+            </Button>
           </div>
         )}
 
